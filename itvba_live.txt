@@ -1,0 +1,302 @@
+
+Sub GetSwapRisk(CurveType As String)
+    Dim ws As Worksheet
+    Dim Row As Integer
+    Dim rn As Integer
+    Dim keyValue As String
+    Dim dict As Object, key, val
+    Dim destRange As Range
+    Dim index As Integer
+    Set ws = ActiveWorkbook.Sheets("result")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    Sheets("TestSummary").Select
+    Set destRange = Range("A1:G100")
+    index = 1
+    
+    destRange.Cells(index, 1).Value = "Portfolio"
+    destRange.Cells(index, 2).Value = "Curve Type"
+    destRange.Cells(index, 3).Value = "FR007"
+    destRange.Cells(index, 4).Value = "SHB3M"
+    destRange.Cells(index, 5).Value = "DISC"
+    
+    index = index + 1
+    
+     
+    rn = ws.UsedRange.Rows.Count
+    For i = 2 To rn
+        keyValue = ws.Cells(i, 8).Value
+        If (Len(Trim(keyValue))) = 0 Then
+            keyValue = "Empty"
+        End If
+        key = keyValue: val = keyValue
+        If Not dict.exists(key) Then
+            dict.Add key, val
+        End If
+    Next i
+    
+    For Each key In dict.keys
+        If (StrComp(key, "Empty", vbTextCompare) = 0 Or StrComp(key, "0", vbTextCompare) = 0) Then
+            GoTo Nextiteration
+        End If
+        Dim fixing_leg As Double
+        Dim floating_s3m_leg As Double
+        Dim floating_r7d_leg As Double
+        fixing_leg = 0#
+        floating_r7d_leg = 0#
+        floating_s3m_leg = 0#
+        For Row = 2 To rn
+            If (Not ws.Cells(Row, 2).Value = "LIVE" Or Not ws.Cells(Row, 8) = key Or Not ws.Cells(Row, 15) = "SOD" Or Not ws.Cells(Row, 12) = "SWAP" Or Not ws.Cells(Row, 50) = CurveType) Then
+                ' Do nothing here
+            Else
+                If (ws.Cells(Row, 16).Value = "POS_FIXED") Then
+                    If (IsNumeric(ws.Cells(Row, 52).Value)) Then
+                        fixing_leg = fixing_leg + ws.Cells(Row, 52).Value
+                    End If
+                End If
+                If (ws.Cells(Row, 16).Value = "POS_FLOAT" And ws.Cells(Row, 18) = "FR007") Then
+                    If (IsNumeric(ws.Cells(Row, 52).Value)) Then
+                        floating_r7d_leg = ws.Cells(Row, 52).Value
+                    End If
+                End If
+                If (ws.Cells(Row, 16).Value = "POS_FLOAT" And ws.Cells(Row, 18) = "SHB3M") Then
+                    If (IsNumeric(ws.Cells(Row, 52).Value)) Then
+                        floating_s3m_leg = ws.Cells(Row, 52).Value
+                    End If
+                End If
+
+            End If
+        Next Row
+        Debug.Print key, CurveType, floating_r7d_leg, floating_s3m_leg, fixing_leg
+        destRange.Cells(index, 1).Value = key
+        destRange.Cells(index, 2).Value = CurveType
+        destRange.Cells(index, 3).Value = floating_r7d_leg
+        destRange.Cells(index, 4).Value = floating_s3m_leg
+        destRange.Cells(index, 5).Value = fixing_leg
+        index = index + 1
+Nextiteration:
+    Next key
+    
+    Call SaveSheet(destRange,  "SwapRisk_" + CurveType)
+End Sub
+
+Sub GetBondRisk(CurveType As String)
+    Dim ws As Worksheet
+    Dim Row As Integer
+    Dim rn As Integer
+    Dim keyValue As String
+    Dim dict As Object, key, val
+    Dim destRange As Range
+    Dim index As Integer
+    
+    
+    Set ws = ActiveWorkbook.Sheets("result")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    Sheets("TestSummary").Select
+    Set destRange = Range("A1:G100")
+    index = 1
+    
+    destRange.Cells(index, 1).Value = "Portfolio"
+    destRange.Cells(index, 2).Value = "Curve Type"
+    destRange.Cells(index, 3).Value = "CGB"
+    destRange.Cells(index, 4).Value = "CDB"
+    destRange.Cells(index, 5).Value = "ADB"
+    destRange.Cells(index, 6).Value = "EXIM"
+    destRange.Cells(index, 7).Value = "CB"
+    index = index + 1
+    
+    rn = ws.UsedRange.Rows.Count
+    For i = 2 To rn
+        keyValue = ws.Cells(i, 8).Value
+        If (Len(Trim(keyValue))) = 0 Then
+            keyValue = "Empty"
+        End If
+        key = keyValue: val = keyValue
+        If Not dict.exists(key) Then
+            dict.Add key, val
+        End If
+    Next i
+    
+    For Each key In dict.keys
+        If (StrComp(key, "Empty", vbTextCompare) = 0 Or StrComp(key, "0", vbTextCompare) = 0) Then
+            GoTo Nextiteration
+        End If
+        Dim cgb As Double
+        Dim cdb As Double
+        Dim adb As Double
+        Dim exim As Double
+        Dim cb As Double
+        
+        cgb = 0#
+        cdb = 0#
+        adb = 0#
+        exim = 0#
+        cb = 0#
+        For Row = 2 To rn
+            If (Not ws.Cells(Row, 2).Value = "LIVE" Or Not ws.Cells(Row, 8) = key Or Not ws.Cells(Row, 15) = "SOD" Or Not ws.Cells(Row, 12) = "BOND" Or Not ws.Cells(Row, 50) = CurveType) Then
+            Else
+                If (ws.Cells(Row, 13).Value = "CDB") Then
+                    If (IsNumeric(ws.Cells(Row, 52).Value)) Then
+                        cdb = cdb + ws.Cells(Row, 52).Value
+                    End If
+                End If
+                If (ws.Cells(Row, 13).Value = "CGB") Then
+                    If (IsNumeric(ws.Cells(Row, 52).Value)) Then
+                        cgb = cgb + ws.Cells(Row, 52).Value
+                    End If
+                End If
+                If (ws.Cells(Row, 13).Value = "ADB") Then
+                    If (IsNumeric(ws.Cells(Row, 52).Value)) Then
+                        adb = adb + ws.Cells(Row, 52).Value
+                    End If
+                End If
+                If (ws.Cells(Row, 13).Value = "EXIM") Then
+                    If (IsNumeric(ws.Cells(Row, 52).Value)) Then
+                        exim = exim + ws.Cells(Row, 52).Value
+                    End If
+                End If
+                If (ws.Cells(Row, 13).Value = "CB") Then
+                    If (IsNumeric(ws.Cells(Row, 52).Value)) Then
+                        cb = cb + ws.Cells(Row, 52).Value
+                    End If
+                End If
+            End If
+        Next Row
+        Debug.Print key, CurveType, cgb, cdb, adb, exim, cb
+        destRange.Cells(index, 1).Value = key
+        destRange.Cells(index, 2).Value = CurveType
+        destRange.Cells(index, 3).Value = cgb
+        destRange.Cells(index, 4).Value = cdb
+        destRange.Cells(index, 5).Value = adb
+        destRange.Cells(index, 6).Value = exim
+        destRange.Cells(index, 7).Value = cb
+        
+        index = index + 1
+Nextiteration:
+    Next key
+    Call SaveSheet(destRange, "BondRisk_" + CurveType)
+End Sub
+
+Sub GetSwapPV(SecType As String)
+    Dim ws As Worksheet
+    Dim Row As Integer
+    Dim rn As Integer
+    Dim keyValue As String
+    Dim dict As Object, key, val
+    Dim destRange As Range
+    Dim index As Integer
+    Set ws = ActiveWorkbook.Sheets("result")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    Sheets("TestSummary").Select
+    Set destRange = Range("A1:G100")
+    index = 1
+    
+    destRange.Cells(index, 1).Value = "Portfolio"
+    destRange.Cells(index, 2).Value = "Index"
+    destRange.Cells(index, 3).Value = "Leg"
+    destRange.Cells(index, 4).Value = "YDayPV"
+    destRange.Cells(index, 5).Value = "EodPV"
+    
+    index = index + 1
+    
+     
+    rn = ws.UsedRange.Rows.Count
+    For i = 2 To rn
+        keyValue = ws.Cells(i, 8).Value
+        If (Len(Trim(keyValue))) = 0 Then
+            keyValue = "Empty"
+        End If
+        key = keyValue: val = keyValue
+        If Not dict.exists(key) Then
+            dict.Add key, val
+        End If
+    Next i
+    
+    For Each key In dict.keys
+        If (StrComp(key, "Empty", vbTextCompare) = 0 Or StrComp(key, "0", vbTextCompare) = 0) Then
+            GoTo Nextiteration
+        End If
+        Dim ydayPVFixed As Double
+        Dim tdayPVFixed As Double
+        Dim ydayPVFloat As Double
+        Dim tdayPVFloat As Double
+        
+        ydayPVFixed = 0#
+        tdayPVFixed = 0#
+        ydayPVFloat = 0#
+        tdayPVFloat = 0#
+        
+        For Row = 2 To rn
+            If (Not ws.Cells(Row, 2).Value = "LIVE" Or Not ws.Cells(Row, 8).Value = key Or Not ws.Cells(Row, 15).Value = "SOD" Or Not ws.Cells(Row, 12).Value = "SWAP" Or Not ws.Cells(Row, 50).Value = "IMM") Then
+                'Do nothing here
+                GoTo Nextiteration2
+            End If
+            ' if(ws.Cells( 1. Security ID
+            If (ws.Cells(Row, 18).Value = SecType And ws.Cells(Row, 16) = "POS_FIXED" And IsNumeric(ws.Cells(Row, 34).Value) And IsNumeric(ws.Cells(Row, 35).Value)) Then
+                ydayPVFixed = ydayPVFixed + ws.Cells(Row, 34).Value
+                tdayPVFixed = tdayPVFixed + ws.Cells(Row, 35).Value
+            End If
+            
+            If (ws.Cells(Row, 18).Value = SecType And ws.Cells(Row, 16).Value = "POS_FLOAT" And IsNumeric(ws.Cells(Row, 34).Value) And IsNumeric(ws.Cells(Row, 35).Value)) Then
+                ydayPVFloat = ydayPVFloat + ws.Cells(Row, 34).Value
+                tdayPVFloat = tdayPVFloat + ws.Cells(Row, 35).Value
+            End If
+                
+            
+Nextiteration2:
+        Next Row
+        Debug.Print key, SecType, "POS_FIXED", ydayPVFixed, tdayPVFixed
+        Debug.Print key, SecType, "POS_FLOAT", ydayPVFloat, tdayPVFloat
+                                                               
+        destRange.Cells(index, 1).Value = key
+        destRange.Cells(index, 2).Value = SecType
+        destRange.Cells(index, 3).Value = "POS_FIXED"
+        destRange.Cells(index, 4).Value = ydayPVFixed
+        destRange.Cells(index, 5).Value = tdayPVFixed
+        index = index + 1
+        
+        destRange.Cells(index, 1).Value = key
+        destRange.Cells(index, 2).Value = SecType
+        destRange.Cells(index, 3).Value = "POS_FLOAT"
+        destRange.Cells(index, 4).Value = ydayPVFloat
+        destRange.Cells(index, 5).Value = tdayPVFloat
+        index = index + 1
+        
+Nextiteration:
+    Next key
+    Call SaveSheet(destRange, "SwapPnL" + "_" + SecType)
+End Sub
+
+
+Sub SaveSheet(rng As Range, fileName As String)
+    Dim mypath As String
+    rng.Copy
+    Workbooks.Add
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+    Selection.NumberFormat = "0.00000_);[red](0.00000)"
+    
+    ChDir "d:\tmp2\"
+    mypath = "d:\tmp2\"
+    ActiveWorkbook.SaveAs fileName:=mypath + "IT_" + fileName + ".xlsx", FileFormat:=xlOpenXMLWorkbook, CreateBackup:=False
+    ActiveWindow.Close
+    rng.Clear
+    
+End Sub
+
+Sub CalculateRisk()
+    Call GetSwapRisk("PAR")
+    Call GetSwapRisk("IMM")
+    Call GetBondRisk("PAR")
+    Call GetBondRisk("IMM")
+    Call GetSwapPV("FR007")
+    Call GetSwapPV("SHB3M")
+End Sub
+
+
+
+
+
+

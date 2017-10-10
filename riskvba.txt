@@ -1,0 +1,405 @@
+Option Explicit
+Sub copySwapPV()
+    Dim index As Integer
+    Dim i As Integer
+    Dim destRng As Range
+    Dim rng As Range
+    Dim name As String
+    Dim portfolio As Variant
+    Dim splitA() As String
+    
+    
+    portfolio = Array("MMA", "MMB", "MMC", "SPG", "MME", "Strat", "ASW", "SPH", "SPL", "SPQ", "SPC", "SPR", "LM", "Curve", "BMR", "BMY", "BMH", "BMC", "BMG")
+       
+    index = 1
+    Sheets("TestSummary").Select
+    Set destRng = Range("A30:G100")
+    
+    destRng.Cells(index, 2).Value = "Portfolio"
+    destRng.Cells(index, 3).Value = "Index"
+    destRng.Cells(index, 4).Value = "Leg"
+    destRng.Cells(index, 5).Value = "YDayPV"
+    destRng.Cells(index, 6).Value = "EodPV"
+    destRng.Cells(index, 1).Value = "Key"
+    
+    index = index + 1
+    For i = 0 To UBound(portfolio)
+        name = CStr(portfolio(i))
+        Sheets(name + "-SODPnL").Select
+        Set rng = Sheets(name + "-SODPnL").Range("A17:P20")
+        Sheets("TestSummary").Select
+        
+        destRng.Cells(index, 2).Value = name
+        splitA = Split(rng.Cells(1, 1).Value, " ")
+        destRng.Cells(index, 3).Value = splitA(0)
+        destRng.Cells(index, 4).Value = splitA(1)
+        destRng.Cells(index, 5).Value = rng.Cells(1, 15).Value
+        destRng.Cells(index, 6).Value = rng.Cells(1, 16).Value
+        destRng.Cells(index, 1).Value = name + "_" + splitA(0) + "_" + splitA(1)
+        
+        index = index + 1
+        destRng.Cells(index, 2).Value = name
+        splitA = Split(rng.Cells(2, 1).Value, " ")
+        destRng.Cells(index, 3).Value = splitA(0)
+        destRng.Cells(index, 4).Value = splitA(1)
+        destRng.Cells(index, 5).Value = rng.Cells(2, 15).Value
+        destRng.Cells(index, 6).Value = rng.Cells(2, 16).Value
+        destRng.Cells(index, 1).Value = name + "_" + splitA(0) + "_" + splitA(1)
+        
+        index = index + 1
+        destRng.Cells(index, 2).Value = name
+        splitA = Split(rng.Cells(3, 1).Value, " ")
+        destRng.Cells(index, 3).Value = splitA(0)
+        destRng.Cells(index, 4).Value = splitA(1)
+        destRng.Cells(index, 5).Value = rng.Cells(3, 15).Value
+        destRng.Cells(index, 6).Value = rng.Cells(3, 16).Value
+        destRng.Cells(index, 1).Value = name + "_" + splitA(0) + "_" + splitA(1)
+        
+        index = index + 1
+        destRng.Cells(index, 2).Value = name
+        splitA = Split(rng.Cells(4, 1).Value, " ")
+        destRng.Cells(index, 3).Value = splitA(0)
+        destRng.Cells(index, 4).Value = splitA(1)
+        destRng.Cells(index, 5).Value = rng.Cells(4, 15).Value
+        destRng.Cells(index, 6).Value = rng.Cells(4, 16).Value
+        destRng.Cells(index, 1).Value = name + "_" + splitA(0) + "_" + splitA(1)
+        index = index + 1
+    Next i
+    
+    destRng.NumberFormat = "0.00000_);[red](0.00000)"
+    destRng.Replace what:="R7D", replacement:="FR007", searchorder:=xlByColumns, MatchCase:=True
+    destRng.Replace what:="S3M", replacement:="SHB3M", searchorder:=xlByColumns, MatchCase:=True
+    destRng.Replace what:="Fixed", replacement:="POS_FIXED", searchorder:=xlByColumns, MatchCase:=True
+    destRng.Replace what:="Float", replacement:="POS_FLOAT", searchorder:=xlByColumns, MatchCase:=True
+    Sheets("TestSummary").Select
+    
+    Call saveRange(destRng, "FO_SWAP_PNL")
+End Sub
+
+
+Sub copyBondPnL()
+    Dim portfolio As Variant
+    Dim index As Integer
+    Dim destRng As Range
+    Dim rng As Range
+    Dim name As String
+    Dim i As Integer
+    Dim irow As Integer
+    
+    portfolio = Array("MMA", "MMB", "MMC", "SPG", "MME", "Strat", "ASW", "SPH", "SPL", "SPQ", "SPC", "SPR", "LM", "Curve", "BMR", "BMY", "BMH", "BMC", "BMG")
+    index = 1
+    Sheets("TestSummary").Select
+    Set destRng = Range("H30:W300")
+    destRng.Cells(index, 2).Value = "Portfolio"
+    destRng.Cells(index, 3).Value = "Bond"
+    destRng.Cells(index, 4).Value = "Qty"
+    destRng.Cells(index, 5).Value = "Type"
+    destRng.Cells(index, 6).Value = "Acc int today"
+    destRng.Cells(index, 7).Value = "Acc int Yday"
+    destRng.Cells(index, 8).Value = "Acc int diff"
+    destRng.Cells(index, 9).Value = "PreyClose"
+    destRng.Cells(index, 10).Value = "EODPrice"
+    destRng.Cells(index, 11).Value = "EODPnL"
+    destRng.Cells(index, 12).Value = "LivePrice"
+    destRng.Cells(index, 13).Value = "Live PnL"
+    destRng.Cells(index, 1).Value = "Key"
+    index = index + 1
+    
+    For i = 0 To UBound(portfolio)
+        name = CStr(portfolio(i))
+        Sheets(name + "-SODPnL").Select
+        Set rng = Sheets(name + "-SODPnL").Range("I104:AH133")
+        irow = 1
+        Do Until Len(Trim(rng.Cells(irow, 1).Value)) = 0
+          destRng.Cells(index, 2).Value = name
+          destRng.Cells(index, 3).Value = rng.Cells(irow, 1).Value 'Bond
+          destRng.Cells(index, 4).Value = rng.Cells(irow, 2).Value 'Qty
+          destRng.Cells(index, 5).Value = rng.Cells(irow, 4).Value 'Type
+          destRng.Cells(index, 6).Value = rng.Cells(irow, 12).Value 'Acc int today
+          destRng.Cells(index, 7).Value = rng.Cells(irow, 14).Value 'Acc int Yday
+          destRng.Cells(index, 8).Value = rng.Cells(irow, 15).Value 'Acc int diff
+          destRng.Cells(index, 9).Value = rng.Cells(irow, 16).Value 'PreyClose
+          destRng.Cells(index, 10).Value = rng.Cells(irow, 20).Value 'EODPrice
+          destRng.Cells(index, 11).Value = rng.Cells(irow, 23).Value 'EODPnL
+          destRng.Cells(index, 12).Value = rng.Cells(irow, 25).Value 'LivePrice
+          destRng.Cells(index, 13).Value = rng.Cells(irow, 22).Value 'Live PnL
+          destRng.Cells(index, 1).Value = name + "_" + rng.Cells(irow, 1).Value 'Key
+          index = index + 1
+          irow = irow + 1
+        Loop
+    Next i
+    destRng.NumberFormat = "0.00000_);[red](0.00000)"
+    Sheets("TestSummary").Select
+    Call saveRange(destRng, "FO_BOND_PNL")
+End Sub
+
+
+Sub copySwapRisk()
+    Dim portfolio As Variant
+    Dim index As Integer
+    Dim destRngPar As Range
+    Dim destRngImm As Range
+    Dim i As Integer
+    Dim rng As Range
+    Dim name As String
+    
+    portfolio = Array("MMA", "MMB", "MMC", "SPG", "MME", "Strat", "ASW", "SPH", "SPL", "SPQ", "SPC", "SPR", "LM", "Curve", "BMR", "BMY", "BMH", "BMC", "BMG")
+    index = 1
+    Sheets("TestSummary").Select
+    Set destRngPar = Range("A1:E50")
+    Set destRngImm = Range("H1:L50")
+      destRngPar.Cells(index, 1).Value = "Portfolio"
+      destRngPar.Cells(index, 2).Value = "Risk Type"
+      destRngPar.Cells(index, 3).Value = "r7d"
+      destRngPar.Cells(index, 4).Value = "s3m"
+      destRngPar.Cells(index, 5).Value = "disc"
+        
+      destRngImm.Cells(index, 1).Value = "Portfolio"
+      destRngImm.Cells(index, 2).Value = "Risk Type"
+      destRngImm.Cells(index, 3).Value = "r7d"
+      destRngImm.Cells(index, 4).Value = "s3m"
+      destRngImm.Cells(index, 5).Value = "disc"
+    
+    index = index + 1
+    For i = 0 To UBound(portfolio)
+        name = CStr(portfolio(i))
+        Sheets(name + "-SODRisk").Select
+        Set rng = Sheets(name + "-SODRisk").Range("H185:W185")
+        destRngPar.Cells(index, 1).Value = name
+        destRngPar.Cells(index, 2).Value = "PAR"
+        destRngPar.Cells(index, 3).Value = rng.Cells(1, 1).Value
+        destRngPar.Cells(index, 4).Value = rng.Cells(1, 3).Value
+        destRngPar.Cells(index, 5).Value = rng.Cells(1, 5).Value
+        
+        Set rng = Sheets(name + "-SODRisk").Range("H399:W399")
+        destRngImm.Cells(index, 1).Value = name
+        destRngImm.Cells(index, 2).Value = "IMM"
+        destRngImm.Cells(index, 3).Value = rng.Cells(1, 1).Value
+        destRngImm.Cells(index, 4).Value = rng.Cells(1, 3).Value
+        destRngImm.Cells(index, 5).Value = rng.Cells(1, 5).Value
+        
+        index = index + 1
+    Next i
+
+    destRngPar.NumberFormat = "0.00000_);[red](0.00000)"
+    Call saveRange(destRngPar, "FO_SWAP_RISK_PAR")
+    destRngImm.NumberFormat = "0.00000_);[red](0.00000)"
+    Call saveRange(destRngImm, "FO_SWAP_RISK_IMM")
+  Sheets("TestSummary").Select
+End Sub
+
+Sub GetParSODRisk()
+    Dim portfolio As Variant
+    Dim index As Integer
+    Dim rng As Range
+    Dim destRngImm As Range
+    Dim destRngPar As Range
+    Dim name As String
+    Dim i As Integer
+    portfolio = Array("MMA", "MMB", "MMC", "SPG", "MME", "Strat", "ASW", "SPH", "SPL", "SPQ", "SPC", "SPR", "LM", "Curve", "BMR", "BMY", "BMH", "BMC", "BMG")
+    index = 1
+    Sheets("TestSummary").Select
+    Set destRngPar = Range("A1:K200")
+    Set destRngImm = Range("A201:K400")
+    
+    destRngPar.Cells(index, 1).Value = "Portfolio"
+    destRngPar.Cells(index, 2).Value = "FR007"
+    destRngPar.Cells(index, 3).Value = "SHB3M"
+    destRngPar.Cells(index, 4).Value = "FIXED"
+    destRngPar.Cells(index, 5).Value = "FUT"
+    destRngPar.Cells(index, 6).Value = "CGB"
+    destRngPar.Cells(index, 7).Value = "CDB"
+    destRngPar.Cells(index, 8).Value = "ADB"
+    destRngPar.Cells(index, 9).Value = "EXIM"
+    destRngPar.Cells(index, 10).Value = "CB"
+    destRngPar.Cells(index, 11).Value = "FLOAT"
+    
+    destRngImm.Cells(index, 1).Value = "Portfolio"
+    destRngImm.Cells(index, 2).Value = "FR007"
+    destRngImm.Cells(index, 3).Value = "SHB3M"
+    destRngImm.Cells(index, 4).Value = "FIXED"
+    destRngImm.Cells(index, 5).Value = "FUT"
+    destRngImm.Cells(index, 6).Value = "CGB"
+    destRngImm.Cells(index, 7).Value = "CDB"
+    destRngImm.Cells(index, 8).Value = "ADB"
+    destRngImm.Cells(index, 9).Value = "EXIM"
+    destRngImm.Cells(index, 10).Value = "CB"
+    destRngImm.Cells(index, 11).Value = "FLOAT"
+    
+    index = index + 1
+    For i = 0 To UBound(portfolio)
+        name = CStr(portfolio(i))
+        Sheets(name + "-SODRisk").Select
+        Set rng = Sheets(name + "-SODRisk").Range("O185:T185")
+        destRngPar.Cells(index, 1).Value = name
+        destRngPar.Cells(index, 2).Value = rng.Cells(1, 1).Value
+        destRngPar.Cells(index, 3).Value = rng.Cells(1, 3).Value
+        destRngPar.Cells(index, 4).Value = rng.Cells(1, 5).Value
+        destRngPar.Cells(index, 5).Value = rng.Cells(1, 6).Value
+        destRngPar.Cells(index, 6).Value = rng.Cells(1, 8).Value
+        destRngPar.Cells(index, 7).Value = rng.Cells(1, 9).Value
+        destRngPar.Cells(index, 8).Value = rng.Cells(1, 10).Value
+        destRngPar.Cells(index, 9).Value = rng.Cells(1, 11).Value
+        destRngPar.Cells(index, 10).Value = rng.Cells(1, 12).Value
+        destRngPar.Cells(index, 11).Value = rng.Cells(1, 13).Value
+        
+        Set rng = Sheets(name + "-SODRisk").Range("H399:T399")
+        destRngImm.Cells(index, 1).Value = name
+        destRngImm.Cells(index, 2).Value = rng.Cells(1, 1).Value
+        destRngImm.Cells(index, 3).Value = rng.Cells(1, 3).Value
+        destRngImm.Cells(index, 4).Value = rng.Cells(1, 5).Value
+        destRngImm.Cells(index, 5).Value = rng.Cells(1, 6).Value
+        destRngImm.Cells(index, 6).Value = rng.Cells(1, 8).Value
+        destRngImm.Cells(index, 7).Value = rng.Cells(1, 9).Value
+        destRngImm.Cells(index, 8).Value = rng.Cells(1, 10).Value
+        destRngImm.Cells(index, 9).Value = rng.Cells(1, 11).Value
+        destRngImm.Cells(index, 10).Value = rng.Cells(1, 12).Value
+        destRngImm.Cells(index, 11).Value = rng.Cells(1, 13).Value
+        
+        index = index + 1
+    Next i
+    destRngPar.NumberFormat = "0.00000_);[red](0.00000)"
+    destRngImm.NumberFormat = "0.00000_);[red](0.00000)"
+    Sheets("TestSummary").Select
+    Call saveRange(destRngPar, "PARSODRisk")
+    Call saveRange(destRngImm, "IMMSODRisk")
+End Sub
+
+Sub copyBondRisk()
+    Dim portfolio As Variant
+    Dim index As Integer
+    Dim destRngPar As Range
+    Dim destRngImm As Range
+    Dim i As Integer
+    Dim rng As Range
+    Dim name As String
+    
+    portfolio = Array("MMA", "MMB", "MMC", "SPG", "MME", "Strat", "ASW", "SPH", "SPL", "SPQ", "SPC", "SPR", "LM", "Curve", "BMR", "BMY", "BMH", "BMC", "BMG")
+    index = 1
+    Sheets("TestSummary").Select
+    Set destRngPar = Range("A150:G200")
+    Set destRngImm = Range("J150:Z200")
+    
+    destRngPar.Cells(index, 1).Value = "Portfolio"
+    destRngPar.Cells(index, 2).Value = "Risk Type"
+    destRngPar.Cells(index, 3).Value = "CGB"
+    destRngPar.Cells(index, 4).Value = "CDB"
+    destRngPar.Cells(index, 5).Value = "ADB"
+    destRngPar.Cells(index, 6).Value = "EXIM"
+    destRngPar.Cells(index, 7).Value = "CB"
+    
+    destRngImm.Cells(index, 1).Value = "Portfolio"
+    destRngImm.Cells(index, 2).Value = "Risk Type"
+    destRngImm.Cells(index, 3).Value = "CGB"
+    destRngImm.Cells(index, 4).Value = "CDB"
+    destRngImm.Cells(index, 5).Value = "ADB"
+    destRngImm.Cells(index, 6).Value = "EXIM"
+    destRngImm.Cells(index, 7).Value = "CB"
+    
+    index = index + 1
+    For i = 0 To UBound(portfolio)
+        name = CStr(portfolio(i))
+        Sheets(name + "-SODRisk").Select
+        Set rng = Sheets(name + "-SODRisk").Range("O185:S185")
+        destRngPar.Cells(index, 1).Value = name
+        destRngPar.Cells(index, 2).Value = "PAR"
+        destRngPar.Cells(index, 3).Value = rng.Cells(1, 1).Value
+        destRngPar.Cells(index, 4).Value = rng.Cells(1, 2).Value
+        destRngPar.Cells(index, 5).Value = rng.Cells(1, 3).Value
+        destRngPar.Cells(index, 6).Value = rng.Cells(1, 4).Value
+        destRngPar.Cells(index, 7).Value = rng.Cells(1, 5).Value
+        
+        Set rng = Sheets(name + "-SODRisk").Range("O399:S399")
+        destRngImm.Cells(index, 1).Value = name
+        destRngImm.Cells(index, 2).Value = "IMM"
+        destRngImm.Cells(index, 3).Value = rng.Cells(1, 1).Value
+        destRngImm.Cells(index, 4).Value = rng.Cells(1, 2).Value
+        destRngImm.Cells(index, 5).Value = rng.Cells(1, 3).Value
+        destRngImm.Cells(index, 6).Value = rng.Cells(1, 4).Value
+        destRngImm.Cells(index, 7).Value = rng.Cells(1, 5).Value
+        
+        index = index + 1
+    Next i
+    destRngPar.NumberFormat = "0.00000_);[red](0.00000)"
+    destRngImm.NumberFormat = "0.00000_);[red](0.00000)"
+     Sheets("TestSummary").Select
+     Call saveRange(destRngPar, "FO_BOND_RISK_PAR")
+     Call saveRange(destRngImm, "FO_BOND_RISK_IMM")
+End Sub
+
+Sub saveRange(rng As Range, fileName As String)
+    Dim currWorkBook As Workbook
+    Dim saveSheet As Worksheet
+    Dim activeBook As String
+    Dim saveFile As Workbook
+    Dim i As Integer
+    rng.Copy
+    
+    Workbooks.Add
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+    Selection.NumberFormat = "0.00000_);[red](0.00000)"
+    ActiveWorkbook.SaveAs fileName:="D:\datacomp\" + fileName + ".xlsx", FileFormat:=xlOpenXMLWorkbook, CreateBackup:=False
+    ActiveWorkbook.Close
+    rng.Clear
+End Sub
+
+Sub copyFUTSODPnL()
+    Dim portfolio As Variant
+    Dim index As Integer
+    Dim destRng As Range
+    Dim rng As Range
+    Dim name As String
+    Dim i As Integer
+    Dim irow As Integer
+    
+    portfolio = Array("MMA", "MMB", "MMC", "SPG", "MME", "Strat", "ASW", "SPH", "SPL", "SPQ", "SPC", "SPR", "LM", "Curve", "BMR", "BMY", "BMH", "BMC", "BMG")
+    index = 1
+    Sheets("TestSummary").Select
+    Set destRng = Range("H30:W300")
+    destRng.Cells(index, 2).Value = "Portfolio"
+    destRng.Cells(index, 3).Value = "FUT"
+    destRng.Cells(index, 4).Value = "Qty"
+    destRng.Cells(index, 5).Value = "Notional"
+    destRng.Cells(index, 6).Value = "YDay Close"
+    destRng.Cells(index, 7).Value = "EOD Price"
+    destRng.Cells(index, 8).Value = "EOD PnL"
+    destRng.Cells(index, 1).Value = "Key"
+    index = index + 1
+    
+    For i = 0 To UBound(portfolio)
+        name = CStr(portfolio(i))
+        Sheets(name + "-SODPnL").Select
+        Set rng = Sheets(name + "-SODPnL").Range("I41:R49")
+        irow = 1
+        Do Until Len(Trim(rng.Cells(irow, 1).Value)) = 0
+          destRng.Cells(index, 2).Value = name
+          destRng.Cells(index, 3).Value = rng.Cells(irow, 1).Value 'Future
+          destRng.Cells(index, 4).Value = rng.Cells(irow, 2).Value 'Qty
+          destRng.Cells(index, 5).Value = rng.Cells(irow, 4).Value 'Notional
+          destRng.Cells(index, 6).Value = rng.Cells(irow, 6).Value 'YDayClose
+          destRng.Cells(index, 7).Value = rng.Cells(irow, 7).Value 'EOD Price
+          destRng.Cells(index, 8).Value = rng.Cells(irow, 8).Value 'EOD PnL
+          destRng.Cells(index, 1).Value = name + "_" + rng.Cells(irow, 1).Value 'EOD PnL
+          index = index + 1
+          irow = irow + 1
+        Loop
+    Next i
+    destRng.NumberFormat = "0.00000_);[red](0.00000)"
+    Sheets("TestSummary").Select
+    Call saveRange(destRng, "FO_FUTURE_PNL")
+End Sub
+Sub copyAll()
+    
+    Call copySwapRisk
+    Call copySwapPV
+    Call copyBondPnL
+    Call copyBondRisk
+    Call copyFUTSODPnL
+End Sub
+
+
+
+
+
+
